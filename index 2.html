@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Dr. Mustafa Mahmoud Audio Library | By KZ</title>
+<style>
+:root{--bg:#080d16;--card:#111827;--card2:#0b1220;--text:#f8fafc;--muted:#a5b4c8;--line:rgba(255,255,255,.12);--gold:#f4c95d;--green:#80e6ad}*{box-sizing:border-box}html{direction:ltr;text-align:left}body{margin:0;direction:ltr;text-align:left;background:radial-gradient(circle at top,#1b2d4b 0,#0b1220 42%,#060912 100%);font-family:Arial,Tahoma,sans-serif;color:var(--text)}.wrap{width:min(1120px,94vw);margin:auto}.hero{padding:34px 0 22px;text-align:center}.kz{color:var(--gold);letter-spacing:.18em;font-size:12px;text-transform:uppercase}.hero h1{font-size:clamp(27px,5vw,52px);margin:12px 0}.hero p{color:var(--muted);line-height:1.65;margin:0 auto;max-width:720px;font-size:15px}.player{background:rgba(7,12,22,.94);border-block:1px solid var(--line);padding:13px 0;position:sticky;top:0;z-index:20;backdrop-filter:blur(14px)}.playerCard{background:linear-gradient(135deg,rgba(244,201,93,.14),rgba(128,230,173,.06));border:1px solid rgba(244,201,93,.28);border-radius:22px;padding:16px;box-shadow:0 18px 50px rgba(0,0,0,.32)}.now{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.title{font-weight:900;font-size:clamp(20px,4vw,30px);line-height:1.35;color:#fff;text-shadow:0 2px 14px rgba(244,201,93,.18)}.meta{font-size:13px;color:var(--gold);margin-top:8px;font-weight:700}.btns{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid var(--line);background:#17233a;color:var(--text);border-radius:999px;padding:10px 14px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.btn.gold{background:linear-gradient(135deg,#f4c95d,#d7a734);color:#171100;border:0}.btn:hover{outline:1px solid rgba(244,201,93,.35)}audio{width:100%;height:42px;margin-top:10px}.toolbar{display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:10px;margin:20px 0}input,select{width:100%;background:#0d1628;color:var(--text);border:1px solid var(--line);border-radius:16px;padding:14px;font-size:15px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}.stat{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:17px;padding:14px;text-align:center}.stat b{display:block;color:var(--gold);font-size:24px}.notice{background:rgba(244,201,93,.08);border:1px solid rgba(244,201,93,.25);color:#ffe7a6;border-radius:18px;padding:14px;line-height:1.8;font-size:13px;margin:12px 0 18px}.workSelectBox{margin:0 0 14px}.hint{color:var(--muted);font-size:13px;line-height:1.7;margin:-4px 0 14px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:34px}.grid.hidden{display:none}.item{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:20px;padding:15px}.item h3{font-size:16px;line-height:1.55;margin:0 0 10px}.row{display:flex;justify-content:space-between;gap:8px;align-items:center;color:var(--muted);font-size:12px;flex-wrap:wrap}.tag{color:var(--green);border:1px solid var(--line);padding:5px 9px;border-radius:999px}.source{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6}.actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.small{font-size:12px;padding:8px 10px}.footer{text-align:center;color:var(--muted);border-top:1px solid var(--line);padding:22px 0;font-size:12px}@media(max-width:850px){.hero{text-align:left}.player{position:relative}.toolbar{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap hero"><div class="kz">By KZ</div><h1>Dr. Mustafa Mahmoud Audio Library</h1><p>Direct audio playback without images. Works appear from their original sources, with the source shown for each item.</p></div>
+<section class="player"><div class="wrap playerCard"><div class="now"><div><div class="meta" style="margin-top:0;color:var(--muted)">CURRENTLY PLAYING</div><div class="title" id="nowTitle">Choose a work to play</div><div class="meta" id="nowMeta">The source and category will appear here</div></div><div class="btns"><button class="btn" onclick="prevTrack()">Previous</button><button class="btn gold" onclick="togglePlay()">Play / Pause</button><button class="btn" onclick="nextTrack()">Next</button></div></div><audio id="audio" controls preload="none"></audio></div></section>
+<main class="wrap"><div class="toolbar"><input id="search" placeholder="Search by episode or work name..." oninput="render()"><select id="category" onchange="render()"><option value="all">All Categories</option><option>Science and Faith</option><option>Radio Interviews</option><option>Books and Audio Files</option></select><select id="source" onchange="render()"><option value="all">All Sources</option></select></div><div class="workSelectBox"><select id="workSelect" onchange="playSelectedWork()"><option value="">Select a work from the library...</option></select></div><div class="hint">The full list stays compact inside the dropdown. Search to display matching results as cards.</div><div class="stats"><div class="stat"><b id="total">0</b>Available Works</div><div class="stat"><b id="shown">0</b>Matching Works</div><div class="stat"><b id="sourcesCount">0</b>Sources</div><div class="stat"><b id="status">Loading</b>Status</div></div><div id="list" class="grid hidden"></div></main><footer class="footer">A curated listening library for knowledge and reflection | By KZ</footer>
+<script>
+const ARCHIVE_SOURCES=[{id:'nordarby_20161221',name:'Archive.org | Science and Faith Part 1',category:'Science and Faith'},{id:'nordarby_20161222',name:'Archive.org | Science and Faith Part 2',category:'Science and Faith'},{id:'2-11-2020_202011',name:'Archive.org | Memories Interview',category:'Radio Interviews'}];
+const FALLBACK=[
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 20 | بحر النور",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 20 ( بحر النور ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 21 | حركات النبات",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 21 ( حركات النبات ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 22 | الامومة",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 22 ( الامومة ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 23 | الديناصور",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 23 ( الديناصور ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 24 | السر الاعظم",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 24 ( السر الاعظم ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 25 | لغز مرض السرطان",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 25 ( لغز مرض السرطان ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 26 | البنكرياس والسكر",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 26 ( البنكرياس والسكر ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 27 | الصحراء",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 27 (الصحراء ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 28 | زرع المخ",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 28 ( زرع المخ ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 29 | زحل",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 29 ( زحل ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 30 | الشعوذة الطب",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 30 ( الشعوذة الطب ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 31 | السم الرهيب",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 31 ( السم الرهيب ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 32 | شمس منتصف الليل",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 32 ( شمس منتصف الليل ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 33 | نبش الماضي",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 33 ( نبش الماضي ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 34 | الذاكرة",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 34 ( الذاكرة ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 35 | اسرار المادة",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 35 ( اسرار المادة ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 36 | بديع السموات والارض",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 36 ( بديع السموات والارض ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 37 | ضربة قدر",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 37 ( ضربة قدر ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 38 | البحث عن وقود",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 38 ( البحث عن وقود ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 39 | الحصان",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 39 ( الحصان ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 40 | الكون",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 40 ( الكون ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 41 | المريخ",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 41 ( المريخ ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 42 | النباتات الاولية",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 42 ( النباتات الاولية ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 43 | انشتين والنسبية",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 43 ( انشتين والنسبية ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 44 | النزول على القمر",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 44 ( النزول على القمر ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 45 | السمنه",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 45 ( السمنه ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 46 | الشمس",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 46 ( الشمس ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 47 | الوعول",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 47 ( الوعول ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 48 | االذبحة ... الجلطة وكيفية الوقاية",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 48 ( االذبحة ... الجلطة وكيفية الوقاية ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 49 | في مبدأ الحياة",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 49 ( في مبدأ الحياة ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 5 | عجائب انعدام الوزن",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 5 ( عجائب انعدام الوزن ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 50 | غرفة العمليات",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 50 ( غرفة العمليات ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 52 | حيلة الليل",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 52 ( حيلة الليل ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 53 | انفجار",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 53 ( انفجار ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 54 | لغز الاضواء القطبية",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 54 ( لغز الاضواء القطبية ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 55 | مارشال القرود",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 55 ( مارشال القرود ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 56 | مابعد الموت",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 56 ( مابعد الموت ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 57 | من فضلك اطفيء سجارتك",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 57 ( من فضلك اطفيء سجارتك ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 58 | ميلاد القرد حسونة",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 58 ( ميلاد القرد حسونة ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 59 | قبلة على يد زوجتي",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 59 ( قبلة على يد زوجتي ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 6 | الليزر أ",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 6 ( الليزر أ ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 60 | رقص الثعابين",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 60 ( رقص الثعابين ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 61 | صراع البقاء",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 61 ( صراع البقاء ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 62 | صوت من اعماق الفضاء",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 62 ( صوت من اعماق الفضاء ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 63 | سنترال اصغر من عقلة الاصبع",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 63 ( سنترال اصغر من عقلة الاصبع ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 64 | نوع جديد من الادمان",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 64 ( نوع جديد من الادمان ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 66 | صنع الله الذي اتقن كل شئ",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 66 ( صنع الله الذي اتقن كل شئ ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 67 | وكل شئ عنه بمقدار",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 67 ( وكل شئ عنه بمقدار ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 69 | النحل",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 69 ( النحل ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 7 | الليزر ب",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 7 ( الليزر ب ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 70 | ملكات جمال الحشرات",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 70 ( ملكات جمال الحشرات ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 72 | التكيف",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 72 ( التكيف ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 74 | هرمونات",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 74 ( هرمونات ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 75 | الكلام",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 75 ( الكلام ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 76 | مواقع النجوم",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 76 ( مواقع النجوم ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 77 | عجاءب حاسة الابصار",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 77 ( عجاءب حاسة الابصار ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 78 | الجلادون",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 78 ( الجلادون ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 79 | الجلادون 2",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 79 ( الجلادون 2 ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 8 | العالم الخفي",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 8 ( العالم الخفي ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 81 | ومن كل شئ خلقنا زوجين",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 81 ( ومن كل شئ خلقنا زوجين ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 87 | المعجزه اليابانية",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 87 ( المعجزه اليابانية ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 88 | الدم",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 88 ( الدم ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 9 | معجزة اسمها الارادة",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 9 ( معجزة اسمها الارادة ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 90 | البوذيه 2",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 90 ( البوذيه 2 ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 91 | هل للنبات مشاعر",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 91 ( هل للنبات مشاعر ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 97 | نجمة البحر",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 97 ( نجمة البحر) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 98 | عجائب المخ 1",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 1",
+  "nordarby_20161221",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 98 ( عجائب المخ 1 ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 1 | الجهاز العصبي",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 2",
+  "nordarby_20161222",
+  "د مصطفي محمود _ برنامج العلم والايمان الحلقة 1 ( الجهاز العصبي ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 84 | دنيا العجائب",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 2",
+  "nordarby_20161222",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 84 ( دنيا العجائب ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 89 | البوذية 1",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 2",
+  "nordarby_20161222",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 89 ( البوذية 1 ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 91 | هل للنبات مشاعر",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 2",
+  "nordarby_20161222",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 91 ( هل للنبات مشاعر ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 94 | الحبار",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 2",
+  "nordarby_20161222",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 94 ( الحبار ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 95 | سرطان المرئ",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 2",
+  "nordarby_20161222",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 95 ( سرطان المرئ ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 96 | روح الفريق",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 2",
+  "nordarby_20161222",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 96 ( روح الفريق ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 98 | عجائب المخ 1",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 2",
+  "nordarby_20161222",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 98 ( عجائب المخ 1 ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 99 | عجائب المخ 2",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 2",
+  "nordarby_20161222",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 99 ( عجائب المخ 2 ) جودة عالية.mp4"
+ ],
+ [
+  "د مصطفى محمود | برنامج العلم والإيمان الحلقة 128 | مسكنك بين النجوم",
+  "Science and Faith",
+  "Archive.org | Science and Faith Part 2",
+  "nordarby_20161222",
+  "د مصطفى محمود _ برنامج العلم والايمان الحلقة 128 ( مسكنك بين النجوم ) جودة عالية.mp4"
+ ],
+ [
+  "حديث الذكريات | د. مصطفى محمود",
+  "Radio Interviews",
+  "Archive.org | Memories Interview",
+  "2-11-2020_202011",
+  "حديث الذكريات ( د . مصطفى محمود ).mp3"
+ ]
+].map(x=>({title:x[0],category:x[1],source:x[2],archiveId:x[3],url:`https://archive.org/download/${x[3]}/${encodeURIComponent(x[4])}`,format:x[4].split('.').pop(),playable:true,fallback:true}));
+let library=[],filtered=[],current=-1;const mediaExt=['mp3','m4a','ogg','oga','mp4','ogv','webm'];
+function cleanTitle(s){return decodeURIComponent((s||'').replace(/\.[^.]+$/,'').replace(/[_]+/g,' ').replace(/\s+/g,' ').trim())}
+function ext(n){return (n.split('.').pop()||'').toLowerCase()}function directUrl(id,n){return `https://archive.org/download/${id}/${encodeURIComponent(n).replace(/%2F/g,'/')}`}
+async function loadSource(src){const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),7000);const r=await fetch(`https://archive.org/metadata/${src.id}`,{signal:ctrl.signal});if(!r.ok)throw Error(src.id);const d=await r.json();return (d.files||[]).filter(f=>mediaExt.includes(ext(f.name||''))&&!/(torrent|meta|thumb|spectrogram|sqlite)/i.test(f.name||'')).map(f=>({title:cleanTitle(f.title||f.name),category:src.category,source:src.name,archiveId:src.id,url:directUrl(src.id,f.name),format:ext(f.name),playable:true}))}
+async function init(){let loaded=[];document.getElementById('status').textContent='Loading';for(const s of ARCHIVE_SOURCES){try{loaded.push(...await loadSource(s))}catch(e){console.warn('Archive blocked or failed:',s.id)}}library=(loaded.length?loaded:FALLBACK).sort((a,b)=>a.title.localeCompare(b.title,'ar'));buildSources();render();document.getElementById('status').textContent=loaded.length?'Ready':'Backup List Extended'}
+function buildSources(){const sel=document.getElementById('source');sel.innerHTML='<option value="all">All Sources</option>';[...new Set(library.map(x=>x.source))].forEach(s=>{let o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o)});document.getElementById('sourcesCount').textContent=new Set(library.map(x=>x.source)).size}
+function render(){const q=document.getElementById('search').value.trim().toLowerCase(),c=document.getElementById('category').value,s=document.getElementById('source').value;filtered=library.filter(x=>(c==='all'||x.category===c)&&(s==='all'||x.source===s)&&(!q||x.title.toLowerCase().includes(q)));document.getElementById('total').textContent=library.length;document.getElementById('shown').textContent=filtered.length;const workSelect=document.getElementById('workSelect');workSelect.innerHTML='<option value="">Select a work from the library...</option>'+filtered.map((x,i)=>`<option value="${i}">${x.title}</option>`).join('');const list=document.getElementById('list');const showCards=q.length>0;list.classList.toggle('hidden',!showCards);list.innerHTML=!showCards?'':(filtered.length?filtered.map((x,i)=>`<article class="item"><h3>${x.title}</h3><div class="row"><span class="tag">${x.category}</span><span>${(x.format||'').toUpperCase()}</span></div><div class="source">Source: ${x.source}</div><div class="actions"><button class="btn gold small" onclick="playIndex(${i})">Listen Now</button><a class="btn small" href="https://archive.org/details/${x.archiveId}" target="_blank">Source Page</a></div></article>`).join(''):'<div class="notice">No matching results.</div>')}function playSelectedWork(){const v=document.getElementById('workSelect').value;if(v!==''&&filtered[Number(v)])playIndex(Number(v))}
+function playIndex(i){current=i;const x=filtered[i];const a=document.getElementById('audio');a.src=x.url;a.play().catch(()=>{});document.getElementById('nowTitle').textContent=x.title;document.getElementById('nowMeta').textContent=`Now Playing: ${x.category} | ${x.source}`}
+function nextTrack(){if(filtered.length)playIndex(current<0?0:(current+1)%filtered.length)}function prevTrack(){if(filtered.length)playIndex(current<=0?filtered.length-1:current-1)}function togglePlay(){const a=document.getElementById('audio');if(!a.src){nextTrack();return}a.paused?a.play():a.pause()}
+window.addEventListener('load',init);
+</script>
+</body></html>
